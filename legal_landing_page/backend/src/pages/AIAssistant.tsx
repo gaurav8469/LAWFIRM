@@ -78,7 +78,6 @@ export default function AIAssistant() {
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const [agentStep, setAgentStep] = useState("");
   const [activeChat] = useState('1')
   const [fileUploaded, setFileUploaded] = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -88,87 +87,24 @@ export default function AIAssistant() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
- const sendMessage = async (text: string) => {
-    if (!text.trim()) return;
-
+  const sendMessage = (text: string) => {
+    if (!text.trim()) return
     const userMsg: Message = {
-        id: Date.now().toString(),
-        role: "user",
-        content: text,
-        timestamp: new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-        }),
-    };
-
-    setMessages(prev => [...prev, userMsg]);
-    setInput("");
-    setLoading(true);
-    setAgentStep("🧠 Master Agent is understanding your case...");
-    await new Promise(r => setTimeout(r, 700));
-
-    setAgentStep("📄 Case Analyzer is classifying the case...");
-    await new Promise(r => setTimeout(r, 700));
-
-    setAgentStep("⚖️ Law Research Agent is finding relevant laws...");
-    await new Promise(r => setTimeout(r, 700));
-
-    setAgentStep("👨‍⚖️ Lawyer Recommendation Agent is selecting advocates...");
-    await new Promise(r => setTimeout(r, 700));
-
-    setAgentStep("📝 Report Generator is preparing your legal report...");
-
-    try {
-       const token = localStorage.getItem("token");
-
-       const res = await fetch("http://localhost:5001/analyze", {
-          method: "POST",
-          headers: {
-             "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          body: JSON.stringify({
-             case: text,
-          }),
-    });
-
-        const data = await res.json();
-
-        const aiMsg: Message = {
-            id: Date.now().toString() + "-ai",
-            role: "ai",
-            content: data.response,
-            timestamp: new Date().toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-            }),
-        };
-
-        setMessages(prev => [...prev, aiMsg]);
-
-    } catch (err) {
-        console.error(err);
-
-        setMessages(prev => [
-            ...prev,
-            {
-                id: Date.now().toString(),
-                role: "ai",
-                content: "Unable to connect to backend.",
-                timestamp: new Date().toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                }),
-            },
-        ]);
-    } finally {
-        setLoading(false);
-        setAgentStep("");
+      id: Date.now().toString(),
+      role: 'user',
+      content: text,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     }
-};
-    
+    setMessages(prev => [...prev, userMsg])
+    setInput('')
+    setLoading(true)
 
-  
+    setTimeout(() => {
+      const aiMsg = { ...aiResponses.default, id: Date.now().toString() }
+      setMessages(prev => [...prev, aiMsg])
+      setLoading(false)
+    }, 1800)
+  }
 
   return (
     <div style={{ display: 'flex', height: 'calc(100vh - 116px)', gap: 0, borderRadius: 'var(--radius)', overflow: 'hidden', border: '1px solid var(--border)' }}>
@@ -372,69 +308,31 @@ export default function AIAssistant() {
             </div>
           ))}
 
-         {/* Agent Status */}
-{loading && (
-  <div
-    className="chat-bubble-ai"
-    style={{
-      padding: "16px",
-      borderRadius: 12,
-      background: "var(--bg-secondary)",
-      border: "1px solid var(--border)",
-    }}
-  >
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 10,
-        marginBottom: 10,
-      }}
-    >
-      <div
-        style={{
-          width: 10,
-          height: 10,
-          borderRadius: "50%",
-          background: "#22c55e",
-          animation: "pulse 1s infinite",
-        }}
-      />
-      <strong>NyayaAI Agent Network Working...</strong>
-    </div>
-
-    <div
-      style={{
-        color: "#60a5fa",
-        fontWeight: 600,
-        marginBottom: 10,
-      }}
-    >
-      {agentStep}
-    </div>
-
-    <div
-      style={{
-        display: "flex",
-        gap: 5,
-        alignItems: "center",
-      }}
-    >
-      {[0, 1, 2].map((i) => (
-        <div
-          key={i}
-          style={{
-            width: 8,
-            height: 8,
-            borderRadius: "50%",
-            background: "#3b82f6",
-            animation: `bounce 1.2s ${i * 0.2}s infinite`,
-          }}
-        />
-      ))}
-    </div>
-  </div>
-)}
+          {/* Loading */}
+          {loading && (
+            <div style={{ display: 'flex', gap: 10 }}>
+              <div style={{
+                width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
+                background: 'linear-gradient(135deg, var(--blue), #7C3AED)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Scale size={13} color="white" />
+              </div>
+              <div className="chat-bubble-ai" style={{ padding: '14px 18px' }}>
+                <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
+                  {[0, 1, 2].map(i => (
+                    <div key={i} style={{
+                      width: 7, height: 7, borderRadius: '50%', background: 'var(--blue)',
+                      animation: `bounce 1.2s ease-in-out ${i * 0.2}s infinite`,
+                    }} />
+                  ))}
+                  <span style={{ marginLeft: 8, fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                    Analyzing your case...
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
           <div ref={bottomRef} />
         </div>
 
@@ -548,20 +446,14 @@ export default function AIAssistant() {
       </div>
 
       <style>{`
-        @keyframes pulse {
-         0% {
-         opacity: 0.4;
-         transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.3);
-  }
-  100% {
-    opacity: 0.4;
-    transform: scale(1);
-  }
-}
+        @keyframes bounce {
+          0%, 80%, 100% { transform: translateY(0); }
+          40% { transform: translateY(-6px); }
+        }
+        @media (max-width: 700px) {
+          .ai-sidebar { display: none !important; }
+          .metadata-grid { grid-template-columns: 1fr !important; }
+        }
       `}</style>
     </div>
   )
