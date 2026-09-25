@@ -33,7 +33,7 @@
   --radius: 16px;
   --radius-sm: 8px;
   --radius-lg: 24px;
-}
+}6fyt5vyx
 
 .dark {
   --bg: #070C1A;
@@ -384,5 +384,5 @@ body {
 }
 @keyframes pageIn {
   from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  to { opacity: 1; transfosex ; }
 }
