@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router'
+
 import RootLayout from '../components/layout/RootLayout'
 import DashboardLayout from '../components/layout/DashboardLayout'
 import Landing from '../pages/Landing'
